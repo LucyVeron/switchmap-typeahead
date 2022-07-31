@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,9 +12,17 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  public fetch(query: string): Observable<any> {
-    const data: string[] = ["aardvark", "ant", "core"];
-    console.log("a", of(data));
-    return of(data);
+  public fetchData = keys => of(this.filterData(keys));
+
+  private filterData(keys) {
+    return [
+      'africa',
+      'antarctica',
+      'asia',
+      'australia',
+      'europe',
+      'north america',
+      'south america'
+    ].filter(option => option.includes(keys))
   }
 }

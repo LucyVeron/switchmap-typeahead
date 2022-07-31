@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { fromEvent, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
+import { debounceTime, map, switchMap, tap } from 'rxjs/operators';
+import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -9,28 +10,18 @@ import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/op
 })
 export class AppComponent implements OnInit {
 
+  constructor(private apiService: ApiService) {}
+
   ngOnInit() {
-    const getContinents = keys => [
-      'africa',
-      'antarctica',
-      'asia',
-      'australia',
-      'europe',
-      'north america',
-      'south america'
-    ].filter(e => e.indexOf(keys.toLowerCase()) > -1);
+    this.typeahead();
+  }
 
-    const fakeContinentsRequest = keys => of(getContinents(keys))
-      .pipe(
-        tap(_ => console.log(`API CALL at ${new Date()}`))
-      );
-
+  public typeahead() {
     fromEvent(document.getElementById('type-ahead'), 'keyup')
       .pipe(
-        debounceTime(200),
+        debounceTime(100),
         map((e: any) => e.target.value),
-        distinctUntilChanged(),
-        switchMap(fakeContinentsRequest),
+        switchMap(this.apiService.fetchData),
         tap(c => document.getElementById('output').innerText = c.join('\n'))
       ).subscribe();
   }
