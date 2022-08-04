@@ -1,27 +1,51 @@
 import { Component, OnInit } from '@angular/core';
 import { fromEvent, of } from 'rxjs';
-import { debounceTime, map, switchMap, tap } from 'rxjs/operators';
-import { ApiService } from './services/api.service';
+import { map, switchMap, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
+  template: `
+    <br/>
+    <input id='type-ahead'/>
+    <br/>
+    <div id='output'></div>
+  `,
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
 
-  constructor(private apiService: ApiService) {}
-
   ngOnInit() {
+    // Watch user keyboard input
     this.typeahead();
+  }
+
+  // Observable of filtered search results
+  public fetchData = keys => of(this.filterData(keys));
+
+  // Compare user input to available list, filter results
+  private filterData(keys) {
+    if (keys.length) {
+      return [
+        'argue',
+        'attest',
+        'authenticate',
+        'bear',
+        'certify',
+        'confirm',
+      ].filter(option => option.includes(keys))
+    } else {
+      return []
+    }
   }
 
   public typeahead() {
     fromEvent(document.getElementById('type-ahead'), 'keyup')
       .pipe(
-        debounceTime(100),
+        // Extract text typed by user
         map((e: any) => e.target.value),
-        switchMap(this.apiService.fetchData),
+        // Take latest emitted input, ignore old input
+        switchMap(this.fetchData),
+        // Display result in HTML
         tap(c => document.getElementById('output').innerText = c.join('\n'))
       ).subscribe();
   }
